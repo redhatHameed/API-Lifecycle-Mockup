@@ -1,0 +1,32 @@
+#!groovy
+
+def toolbox = load '../3scale_toolbox.groovy'
+def toolboxConfig = [
+  "secretName": params.SECRET_NAME
+]
+def baseSystemName = toolbox.generateRandomBaseSystemName()
+
+node() {
+  stage('Checkout Source') {
+    checkout scm
+  }
+
+  stage("Get toolbox version") {
+    openshift.withCluster() {
+      openshift.withProject(params.NAMESPACE) {
+        echo "toolbox version = " + toolbox.getToolboxVersion()
+      }
+    }
+  }
+
+  stage("Import OpenAPI") {
+    openshift.withCluster() {
+      openshift.withProject(params.NAMESPACE) {
+        toolbox.importOpenAPI(destination: params.TARGET_INSTANCE,
+                              toolboxConfig: toolboxConfig,
+                              oasFile: "swagger.json",
+                              baseSystemName: baseSystemName) 
+      }
+    }
+  }
+}
