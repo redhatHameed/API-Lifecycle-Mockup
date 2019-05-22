@@ -40,12 +40,12 @@ node() {
   stage("Create an Application Plan") {
     openshift.withCluster() {
       openshift.withProject(params.NAMESPACE) {
-        applyApplicationPlan(openshift: openshift,
-                             destination: params.TARGET_INSTANCE,
-                             serviceSystemName: targetSystemName,
-                             planSystemName: "test_plan",
-                             planDisplayName: "Test Plan",
-                             toolboxConfig: toolboxConfig)
+        toolbox.applyApplicationPlan(openshift: openshift,
+                                     destination: params.TARGET_INSTANCE,
+                                     serviceSystemName: targetSystemName,
+                                     planSystemName: "test_plan",
+                                     planDisplayName: "Test Plan",
+                                     toolboxConfig: toolboxConfig)
       }
     }
   }
