@@ -32,7 +32,7 @@ node() {
                                                  toolboxConfig: toolboxConfig,
                                                  oasFile: "testcase-01/swagger.json",
                                                  baseSystemName: baseSystemName)
-        echo "Service with system_name ${systemName} created !"
+        echo "Service with system_name ${targetSystemName} created !"
       }
     }
   }
