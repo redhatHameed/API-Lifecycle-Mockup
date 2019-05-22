@@ -8,6 +8,7 @@ def toolboxConfig = [
   "secretName": params.SECRET_NAME
 ]
 def baseSystemName = toolbox.generateRandomBaseSystemName()
+def targetSystemName = null
 
 node() {
   stage('Checkout Source') {
@@ -26,12 +27,32 @@ node() {
   stage("Import OpenAPI") {
     openshift.withCluster() {
       openshift.withProject(params.NAMESPACE) {
-        toolbox.importOpenAPI(openshift: openshift,
-                              destination: params.TARGET_INSTANCE,
-                              toolboxConfig: toolboxConfig,
-                              oasFile: "testcase-01/swagger.json",
-                              baseSystemName: baseSystemName) 
+        targetSystemName = toolbox.importOpenAPI(openshift: openshift,
+                                                 destination: params.TARGET_INSTANCE,
+                                                 toolboxConfig: toolboxConfig,
+                                                 oasFile: "testcase-01/swagger.json",
+                                                 baseSystemName: baseSystemName)
+        echo "Service with system_name ${systemName} created !"
       }
     }
   }
+
+  stage("Create an Application Plan") {
+    openshift.withCluster() {
+      openshift.withProject(params.NAMESPACE) {
+        applyApplicationPlan(openshift: openshift,
+                             destination: params.TARGET_INSTANCE,
+                             serviceSystemName: targetSystemName,
+                             planSystemName: "test_plan",
+                             planDisplayName: "Test Plan",
+                             toolboxConfig: toolboxConfig)
+      }
+    }
+  }
+
+  // Create an application
+  // Integration tests
+  // Promote to production
+  
+
 }
