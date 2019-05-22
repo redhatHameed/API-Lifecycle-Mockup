@@ -1,6 +1,9 @@
 #!groovy
 
-def toolbox = load '../3scale_toolbox.groovy'
+library identifier: '3scale-toolbox-jenkins@master', 
+        retriever: modernSCM([$class: 'GitSCMSource',
+                              remote: 'https://github.com/nmasse-itix/3scale-toolbox-jenkins.git'])
+
 def toolboxConfig = [
   "secretName": params.SECRET_NAME
 ]
@@ -8,13 +11,14 @@ def baseSystemName = toolbox.generateRandomBaseSystemName()
 
 node() {
   stage('Checkout Source') {
+    //git url: "https://github.com/nmasse-itix/API-Lifecycle-Mockup.git"
     checkout scm
   }
 
   stage("Get toolbox version") {
     openshift.withCluster() {
       openshift.withProject(params.NAMESPACE) {
-        echo "toolbox version = " + toolbox.getToolboxVersion()
+        echo "toolbox version = " + toolbox.getToolboxVersion(openshift: openshift)
       }
     }
   }
@@ -22,9 +26,10 @@ node() {
   stage("Import OpenAPI") {
     openshift.withCluster() {
       openshift.withProject(params.NAMESPACE) {
-        toolbox.importOpenAPI(destination: params.TARGET_INSTANCE,
+        toolbox.importOpenAPI(openshift: openshift,
+                              destination: params.TARGET_INSTANCE,
                               toolboxConfig: toolboxConfig,
-                              oasFile: "swagger.json",
+                              oasFile: "testcase-01/swagger.json",
                               baseSystemName: baseSystemName) 
       }
     }
