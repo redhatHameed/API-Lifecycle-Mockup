@@ -27,6 +27,9 @@ node() {
   stage("Import OpenAPI") {
     openshift.withCluster() {
       openshift.withProject(params.NAMESPACE) {
+        // Here we would need to pass the public staging/prod url when using
+        // APIcast Self-Managed
+        // See https://issues.jboss.org/browse/THREESCALE-2607
         targetSystemName = toolbox.importOpenAPI(openshift: openshift,
                                                  destination: params.TARGET_INSTANCE,
                                                  toolboxConfig: toolboxConfig,
@@ -50,9 +53,47 @@ node() {
     }
   }
 
-  // Create an application
-  // Integration tests
-  // Promote to production
-  
+  stage("Create an Application") {
+    openshift.withCluster() {
+      openshift.withProject(params.NAMESPACE) {
+        toolbox.createApplication(openshift: openshift,
+                                  destination: params.TARGET_INSTANCE,
+                                  serviceSystemName: targetSystemName,
+                                  planSystemName: "test_plan",
+                                  applicationName: "My App",
+                                  applicationDescription: "Test",
+                                  toolboxConfig: toolboxConfig)
+      }
+    }
+  }
+
+  stage("Run integration tests") {
+    openshift.withCluster() {
+      openshift.withProject(params.NAMESPACE) {
+        // To run the integration tests when using APIcast SaaS instances, we need
+        // to fetch the proxy definition to extract the staging public url
+        def proxy = toolbox.readProxy(openshift: openshift,
+                                      destination: params.TARGET_INSTANCE,
+                                      serviceSystemName: targetSystemName,
+                                      environment: "sandbox",
+                                      toolboxConfig: toolboxConfig)
+        sh '''set -xe
+        curl ${proxy.sandbox_endpoint}/beers
+        # TODO
+        '''
+      }
+    }
+  }
+
+  stage("Promote to production") {
+    openshift.withCluster() {
+      openshift.withProject(params.NAMESPACE) {
+        toolbox.promoteToProduction(openshift: openshift,
+                                    destination: params.TARGET_INSTANCE,
+                                    serviceSystemName: targetSystemName,
+                                    toolboxConfig: toolboxConfig)
+      }
+    }
+  }
 
 }
