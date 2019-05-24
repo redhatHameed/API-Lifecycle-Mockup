@@ -4,42 +4,30 @@ library identifier: '3scale-toolbox-jenkins@master',
         retriever: modernSCM([$class: 'GitSCMSource',
                               remote: 'https://github.com/nmasse-itix/3scale-toolbox-jenkins.git'])
 
-def toolboxConfig = [
-  "secretName": params.SECRET_NAME
-]
-def baseSystemName = toolbox.generateRandomBaseSystemName()
-def targetSystemName = null
+def service = null
 
 node() {
   stage('Checkout Source') {
-    //git url: "https://github.com/nmasse-itix/API-Lifecycle-Mockup.git"
     checkout scm
   }
 
-  stage("Get toolbox version") {
-    openshift.withCluster() {
-      openshift.withProject(params.NAMESPACE) {
-        echo "toolbox version = " + toolbox.getToolboxVersion(openshift: openshift)
-      }
-    }
+  stage("Prepare") {
+    service = toolbox.prepareThreescaleService(
+        openapi: [filename: "testcase-01/swagger.json"],
+        environment: [baseSystemName: toolbox.generateRandomBaseSystemName()],
+        toolbox: [openshiftProject: params.NAMESPACE, destination: params.TARGET_INSTANCE, secretName: params.SECRET_NAME],
+        service: [:]
+    )
+
+    echo "toolbox version = " + service.toolbox.getToolboxVersion()
   }
 
   stage("Import OpenAPI") {
-    openshift.withCluster() {
-      openshift.withProject(params.NAMESPACE) {
-        // Here we would need to pass the public staging/prod url when using
-        // APIcast Self-Managed
-        // See https://issues.jboss.org/browse/THREESCALE-2607
-        targetSystemName = toolbox.importOpenAPI(openshift: openshift,
-                                                 destination: params.TARGET_INSTANCE,
-                                                 toolboxConfig: toolboxConfig,
-                                                 oasFile: "testcase-01/swagger.json",
-                                                 baseSystemName: baseSystemName)
-        echo "Service with system_name ${targetSystemName} created !"
-      }
-    }
+    service.importOpenAPI()
+    echo "Service with system_name ${service.environment.targetSystemName} created !"
   }
 
+  /*
   stage("Create an Application Plan") {
     openshift.withCluster() {
       openshift.withProject(params.NAMESPACE) {
@@ -56,13 +44,17 @@ node() {
   stage("Create an Application") {
     openshift.withCluster() {
       openshift.withProject(params.NAMESPACE) {
-        toolbox.createApplication(openshift: openshift,
-                                  destination: params.TARGET_INSTANCE,
-                                  serviceSystemName: targetSystemName,
-                                  planSystemName: "test_plan",
-                                  applicationName: "My App",
-                                  applicationDescription: "Test",
-                                  toolboxConfig: toolboxConfig)
+        testApplicationCredentials = toolbox.getDefaultApplicationCredentials(serviceSystemName: targetSystemName,
+                                                                              applicationName: testApplicationName,
+                                                                              toolboxConfig: toolboxConfig)
+        toolbox.applyApplication(openshift: openshift,
+                                 destination: params.TARGET_INSTANCE,
+                                 serviceSystemName: targetSystemName,
+                                 planSystemName: "test_plan",
+                                 applicationName: testApplicationName,
+                                 applicationDescription: "Test",
+                                 applicationCredentials: testApplicationCredentials
+                                 toolboxConfig: toolboxConfig)
       }
     }
   }
@@ -95,5 +87,6 @@ node() {
       }
     }
   }
+  */
 
 }
