@@ -16,7 +16,12 @@ node() {
         openapi: [filename: "testcase-01/swagger.json"],
         environment: [baseSystemName: toolbox.generateRandomBaseSystemName()],
         toolbox: [openshiftProject: params.NAMESPACE, destination: params.TARGET_INSTANCE, secretName: params.SECRET_NAME],
-        service: [:]
+        service: [:],
+        applicationPlans: [
+          [ systemName: "test", name: "Test", defaultPlan: true, published: true ],
+          [ systemName: "silver", name: "Silver" ],
+          [ systemName: "gold", name: "Gold" ],
+        ]
     )
 
     echo "toolbox version = " + service.toolbox.getToolboxVersion()
@@ -27,66 +32,32 @@ node() {
     echo "Service with system_name ${service.environment.targetSystemName} created !"
   }
 
-  /*
   stage("Create an Application Plan") {
-    openshift.withCluster() {
-      openshift.withProject(params.NAMESPACE) {
-        toolbox.applyApplicationPlan(openshift: openshift,
-                                     destination: params.TARGET_INSTANCE,
-                                     serviceSystemName: targetSystemName,
-                                     planSystemName: "test_plan",
-                                     planDisplayName: "Test Plan",
-                                     toolboxConfig: toolboxConfig)
-      }
-    }
+    service.applyApplicationPlans()
   }
 
   stage("Create an Application") {
-    openshift.withCluster() {
-      openshift.withProject(params.NAMESPACE) {
-        testApplicationCredentials = toolbox.getDefaultApplicationCredentials(serviceSystemName: targetSystemName,
-                                                                              applicationName: testApplicationName,
-                                                                              toolboxConfig: toolboxConfig)
-        toolbox.applyApplication(openshift: openshift,
-                                 destination: params.TARGET_INSTANCE,
-                                 serviceSystemName: targetSystemName,
-                                 planSystemName: "test_plan",
-                                 applicationName: testApplicationName,
-                                 applicationDescription: "Test",
-                                 applicationCredentials: testApplicationCredentials
-                                 toolboxConfig: toolboxConfig)
-      }
-    }
+    def testApplication = [
+      name: "my-test-app",
+      description: "This is used for tests"
+    ]
+
+    def testApplicationCredentials = toolbox.getDefaultApplicationCredentials(service, testApplication.name)
+    service.applyApplication(testApplication + testApplicationCredentials)
   }
 
   stage("Run integration tests") {
-    openshift.withCluster() {
-      openshift.withProject(params.NAMESPACE) {
-        // To run the integration tests when using APIcast SaaS instances, we need
-        // to fetch the proxy definition to extract the staging public url
-        def proxy = toolbox.readProxy(openshift: openshift,
-                                      destination: params.TARGET_INSTANCE,
-                                      serviceSystemName: targetSystemName,
-                                      environment: "sandbox",
-                                      toolboxConfig: toolboxConfig)
-        sh '''set -xe
-        curl ${proxy.sandbox_endpoint}/beers
-        # TODO
-        '''
-      }
-    }
+    // To run the integration tests when using APIcast SaaS instances, we need
+    // to fetch the proxy definition to extract the staging public url
+    def proxy = service.readProxy()
+    sh '''set -xe
+    curl ${proxy.sandbox_endpoint}/beers
+    # TODO
+    '''
   }
 
   stage("Promote to production") {
-    openshift.withCluster() {
-      openshift.withProject(params.NAMESPACE) {
-        toolbox.promoteToProduction(openshift: openshift,
-                                    destination: params.TARGET_INSTANCE,
-                                    serviceSystemName: targetSystemName,
-                                    toolboxConfig: toolboxConfig)
-      }
-    }
+    service.promoteToProduction()
   }
-  */
 
 }
