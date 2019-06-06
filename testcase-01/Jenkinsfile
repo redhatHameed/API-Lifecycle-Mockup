@@ -15,7 +15,7 @@ node() {
     service = toolbox.prepareThreescaleService(
         openapi: [filename: "testcase-01/swagger.json"],
         environment: [baseSystemName: toolbox.generateRandomBaseSystemName()],
-        toolbox: [openshiftProject: params.NAMESPACE, destination: params.TARGET_INSTANCE, secretName: params.SECRET_NAME],
+        toolbox: [openshiftProject: params.NAMESPACE, destination: params.TARGET_INSTANCE, secretName: params.SECRET_NAME, insecure: true],
         service: [:],
         applicationPlans: [
           [ systemName: "test", name: "Test", defaultPlan: true, published: true ],
