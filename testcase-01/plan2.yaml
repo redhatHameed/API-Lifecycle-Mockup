@@ -1,0 +1,66 @@
+---
+plan:
+  name: Basic
+  setup_fee: 0.0
+  cost_per_month: 0.0
+  trial_period_days: 0
+  cancellation_period: 0
+  approval_required: false
+  system_name: basic
+  end_user_required: false
+limits:
+- period: eternity
+  value: 0
+  plan_id: 2357355947977
+  metric_system_name: Say_Hello
+- period: month
+  value: 1
+  plan_id: 2357355947977
+  metric_system_name: Say_Goodbye
+- period: week
+  value: 3
+  plan_id: 2357355947977
+  metric_system_name: Say_Goodbye
+- period: day
+  value: 42
+  plan_id: 2357355947977
+  metric_system_name: hits
+pricingrules:
+- cost_per_unit: '1.0'
+  min: 1
+  max: 10
+  metric_system_name: Say_Goodbye
+- cost_per_unit: '0.5'
+  min: 11
+  max: 1000
+  metric_system_name: Say_Goodbye
+- cost_per_unit: '100.0'
+  min: 1
+  max: 10000
+  metric_system_name: Say_Hello
+- cost_per_unit: '42.0'
+  min: 1
+  max: 10
+  metric_system_name: hits
+plan_features:
+- name: Unlimited Greetings
+  system_name: unlimited_greetings
+  scope: application_plan
+  visible: true
+metrics:
+- name: hits
+  system_name: hits
+  friendly_name: Hits
+  description: Number of API hits
+  unit: hit
+methods:
+- name: Say_Hello
+  system_name: Say_Hello
+  friendly_name: Say Hello
+  description: ''
+- name: Say_Goodbye
+  system_name: Say_Goodbye
+  friendly_name: Say Goodbye
+  description: ''
+created_at: '2019-06-14T09:16:47Z'
+toolbox_version: 0.10.0

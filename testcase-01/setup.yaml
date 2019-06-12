@@ -23,12 +23,32 @@ objects:
             value: ${NAMESPACE}
           - name: TARGET_INSTANCE
             value: ${TARGET_INSTANCE}
+          - name: API_BASE_SYSTEM_NAME
+            value: ${API_BASE_SYSTEM_NAME}
+          - name: PRIVATE_BASE_URL
+            value: ${PRIVATE_BASE_URL}
+          - name: PRODUCTION_PUBLIC_BASE_URL
+            value: ${PRODUCTION_PUBLIC_BASE_URL}
+          - name: STAGING_PUBLIC_BASE_URL
+            value: ${STAGING_PUBLIC_BASE_URL}
+         
+
+
 parameters:
 - name: SECRET_NAME
   value: 3scale-toolbox
 - name: NAMESPACE
-  value: api-lifecycle
+  value: rh-dev
 - name: TARGET_INSTANCE
-  value: nmasse-redhat
+  value: instance_a
 - name: GIT_REPO
-  value: https://github.com/nmasse-itix/API-Lifecycle-Mockup.git
+  value: https://github.com/redhatHameed/API-Lifecycle-Mockup.git
+- name: API_BASE_SYSTEM_NAME
+  value: 3scalefuse
+- name: PRIVATE_BASE_URL
+  value: http://maingateway-service-ah-dev.app.middleware.ocp.cloud.lab.eng.bos.redhat.com  
+- name: PRODUCTION_PUBLIC_BASE_URL
+  value: http://3scalefuse.app.middleware.ocp.cloud.lab.eng.bos.redhat.com  
+- name: STAGING_PUBLIC_BASE_URL
+  value: http://3scalefuse-staging.app.middleware.ocp.cloud.lab.eng.bos.redhat.com
+
